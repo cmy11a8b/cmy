@@ -1,0 +1,52 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+char buf[32];
+int main(int argc, char* argv[], char* envp[]){
+        if(argc<2){
+                printf("pass argv[1] a number\n");
+                return 0;
+        }
+        int fd = atoi( argv[1] ) - 0x1234;
+        int len = 0;
+        len = read(fd, buf, 32);
+        if(!strcmp("LETMEWIN\n", buf)){
+                printf("good job :)\n");
+                system("/bin/cat flag");
+                exit(0);
+        }
+        printf("learn about Linux file IO\n");
+        return 0;
+
+}
+
+--------------------------------------------------------------------------------------------------------------
+문제를 확인해보면 우리가 입력한 문자열이 "LETMEWIN"이라는 문자열이랑 같을 경우 flag파일을 보여주는 방식이다.
+
+그럼 소스코드를 확인해 보면 우리가 핵심적으로 봐야될 것은 read()라는 것이다 
+
+read의 역활은 ? -> 파일을 읽어오는 것이다 
+-> 안에 들어가는 인자값 3개는
+   int fd         : 파일 디스크립터
+   void *buf      : 파일을 읽어들을 버퍼
+   size_t nbytes  : 버퍼의 크기
+   
+파일 디스크립터에는 3가지의 값이 들어갈 수 있다
+|0|표준입력 : Standard Input|  
+|1|표준출력 : Standard Output|  
+|2|표준에러: Standard Error| 
+   
+여기서 0을 넣어서 파일을 읽어와서 buf에 쓰는것이 아니라 우리가 직접 입력할 수 있게 하는 것이다 
+
+그러면 fd를 0으로 만들어 줘야 한다 
+
+위쪽 소스코드를 한번더 보면 
+
+int fd = atoi( argv[1] ) - 0x1234;
+
+이라는 파일이 보이는데 atoi함수는 문자열을 정수로 받아들이는 함수이다 
+
+보면 우리가 준 [ 인자값  - 0x1234 ] 이다 즉 우리는 인자값을 0x1234를 주면 fd는 0 이되므로 위쪽 파일 디스크립터에 0이 들어가게 된다 그럼 문제가 해결된다
+: 4660(int) -> 0x1234(Hex)
+
+인자값으로 4660을 준후 "LETMEWIN"을 입력하면 된다.
